@@ -1,0 +1,11 @@
+server {
+    index index.php index.html;
+    listen 80 default;
+    root /var/www/html/public;
+
+    location / {
+        index index.php;
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+}

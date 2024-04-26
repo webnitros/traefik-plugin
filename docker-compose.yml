@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  traefikx:
+    image: traefik:v2.5
+    container_name: traefik
+    command:
+      - "--api.insecure=true"  # Отключаем безопасный режим для API
+      - "--providers.docker=true"
+      # experimental:
+      #  plugins:
+      #    realip:
+      #      moduleName: github.com/Desuuuu/traefik-real-ip-plugin
+      #      version: v1.1.0
+      - "--experimental.plugins.realip.modulename=github.com/Desuuuu/traefik-real-ip-plugin"
+      - "--experimental.plugins.realip.version=v1.1.0"
+    #ports:
+    #  - "80:80"  # Перенаправляем порт 80 на Traefik
+    #  - "8080:8080"  # Для доступа к панели управления Traefik
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Монтируем сокет Docker
+
+  php:
+    image: php:7.4-apache
+    container_name: php_container
+    volumes:
+      - ./index.php:/var/www/html/index.php
+    networks:
+      - net
+    ports:
+      - target: 80
+        published: 8089
+        protocol: tcp
+        mode: host
+
+  nginx:
+    image: nginx:1.22
+    volumes:
+      - ./nginx/:/etc/nginx/templates/
+      - ./index.php:/var/www/html/public/index.php
+    networks:
+      - net
+    ports:
+      - target: 80
+        published: 9089
+        protocol: tcp
+        mode: host
+
+networks:
+  net:
+
